@@ -1,6 +1,6 @@
 *.sublime-workspace
 *.pyc
-.cache/*
+*.cache
 bin/*
 include/*
 lib/*

@@ -1,0 +1,32 @@
+{
+	"build_systems":
+	[
+		{
+			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+			"name": "Anaconda Python Builder",
+			"selector": "source.python",
+			"shell_cmd": "\"/usr/local/bin/python3\" -u \"$file\""
+		},
+		{
+			"cmd":
+			[
+				"py.test",
+				"tests/"
+			],
+			"env":
+			{
+				"PYTHONPATH": "$PYTHONPATH:${project_path}"
+			},
+			"name": "Py.Test",
+			"path": "/usr/local/bin/",
+			"working_dir": "${project_path}"
+		},
+	],
+
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	]
+}
