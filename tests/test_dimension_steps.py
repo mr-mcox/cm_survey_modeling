@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from surveyformat import remove_blank_corps, add_cohort, add_survey
+from surveyformat import remove_blank_corps, add_cohort, add_survey, add_survey_seq
 
 
 def test_remove_rows_without_corps():
@@ -14,7 +14,10 @@ def cohort_input():
     cols = ['Corps', 'survey_code']
     recs = [('1st year', '1516EYS'),
             ('1st year', '1415EYS'),
+            ('1st year', '1415F8W'),
+            ('1st year', '1011EIS'),
             ('2nd year', '1415EYS'),
+            ('2nd year', '1415F8W'),
             ('1st year', '1516F8W'),
             ('1st year', '1011R0'),
             ]
@@ -54,3 +57,15 @@ def test_add_survey_case_3(cohort_input):
 def test_add_survey_case_4(cohort_input):
     out = add_survey(cohort_input)
     assert (out.ix[(out.Corps == '1st year') & out.survey_code.str.contains('R0$'),'survey'] == 'F8W-1st year').all()
+
+def test_add_survey_seq(cohort_input):
+    out = add_survey_seq(cohort_input)
+    assert out.ix[out.survey == 'EYS-1st year', 'survey_seq'].min() > out.ix[out.survey == 'F8W-1st year', 'survey_seq'].max()
+
+def test_add_survey_seq_case_2(cohort_input):
+    out = add_survey_seq(cohort_input)
+    assert out.ix[out.survey == 'EYS-2nd year', 'survey_seq'].min() > out.ix[out.survey == 'EYS-1st year', 'survey_seq'].max()
+
+def test_survey_seq_complete_seq(cohort_input):
+    out = add_survey_seq(cohort_input)
+    assert set(out.survey_seq.unique()) == set(range(len(out.survey.unique())))
