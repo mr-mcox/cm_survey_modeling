@@ -14,10 +14,15 @@ def test_integration():
 
     # Cohort computed
     # All rows with Corps = 1st year and survey_code starting with 14 have a cohort of 2014
+    assert (out.ix[(out.Corps == '1st year') & (
+        out.survey_code.str.contains('^14')), 'cohort'] == 2014).all()
     # All rows with Corps = 2nd year and survey_code starting with 15 have a
     # cohort of 2014
+    assert (out.ix[(out.Corps == '2nd year') & (
+        out.survey_code.str.contains('^15')), 'cohort'] == 2014).all()
 
     # Survey is a concatenation of last three letters of survey code and Corps
+    assert (out.survey == out.survey_code.str.extract('(\w{3})$', expand=False) + '-' + out.Corps).all()
 
     # Survey sequence is in proper order
     # EYS-1st year has a higher sequence number than MYS-1st year
