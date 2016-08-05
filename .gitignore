@@ -1,0 +1,8 @@
+*.sublime-workspace
+*.pyc
+.cache/*
+bin/*
+include/*
+lib/*
+*~*.xlsx
+*.DS_Store
