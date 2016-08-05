@@ -50,14 +50,23 @@ def add_survey_seq(df):
     if 'survey' not in out.columns:
         out = add_survey(out)
 
-    fy_surveys = out.ix[out.Corps == '1st year', 'survey_mod'].unique()
-    seq = dict(zip(reversed(fy_surveys), range(len(fy_surveys))))
+    fy_survey_mod = list(reversed(out.ix[out.Corps == '1st year', 'survey_mod'].unique()))
+    fy_survey = list(reversed(out.ix[out.Corps == '1st year', 'survey'].unique()))
+    fy_nums = [x for x in range(len(fy_survey_mod))]
+    seq = dict(zip(fy_survey_mod, fy_nums))
     out['survey_seq'] = out.survey_mod.map(seq)
 
-    sy_surveys = out.ix[out.Corps == '2nd year', 'survey_mod'].unique()
-    seq_nums = [x + len(fy_surveys) for x in range(len(sy_surveys))]
-    seq = dict(zip(reversed(sy_surveys), seq_nums))
+    sy_survey_mod = list(reversed(out.ix[out.Corps == '2nd year', 'survey_mod'].unique()))
+    sy_survey = list(reversed(out.ix[out.Corps == '2nd year', 'survey'].unique()))
+    sy_nums = [x + len(fy_survey_mod) for x in range(len(sy_survey_mod))]
+    seq = dict(zip(sy_survey_mod, sy_nums))
     sy = out.Corps == '2nd year'
     out.ix[sy, 'survey_seq'] = out.ix[sy, 'survey_mod'].map(seq)
+
+    survey_dict = dict(zip(fy_survey + sy_survey, fy_nums + sy_nums))
+    survey_sort = sorted(survey_dict.keys(), key=lambda x: survey_dict[x])
+
+    out.survey = out.survey.astype('category', categories = survey_sort, ordered=True)
+    print(out.survey)
 
     return out

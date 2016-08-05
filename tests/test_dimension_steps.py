@@ -69,3 +69,7 @@ def test_add_survey_seq_case_2(cohort_input):
 def test_survey_seq_complete_seq(cohort_input):
     out = add_survey_seq(cohort_input)
     assert set(out.survey_seq.unique()) == set(range(len(out.survey.unique())))
+
+def test_survey_categories(cohort_input):
+    out = add_survey_seq(cohort_input)
+    assert list(out.survey.cat.categories) == ['EIS-1st year', 'F8W-1st year', 'EYS-1st year', 'F8W-2nd year', 'EYS-2nd year']
