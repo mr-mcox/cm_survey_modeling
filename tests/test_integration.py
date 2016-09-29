@@ -43,3 +43,4 @@ def test_integration():
 
     # Measure includes both question types
     melt_out.variable.unique().tolist() == ['CALI-% strong', 'CALI-% weak']
+

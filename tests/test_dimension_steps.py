@@ -12,7 +12,9 @@ def test_remove_rows_without_corps():
 @pytest.fixture
 def cohort_input():
     cols = ['Corps', 'survey_code']
-    recs = [('1st year', '1516EYS'),
+    recs = [
+            ('1st year', '1516MYS'),
+            ('1st year', '1516EYS'),
             ('1st year', '1415EYS'),
             ('1st year', '1415F8W'),
             ('1st year', '1011EIS'),
@@ -66,10 +68,14 @@ def test_add_survey_seq_case_2(cohort_input):
     out = add_survey_seq(cohort_input)
     assert out.ix[out.survey == 'EYS-2nd year', 'survey_seq'].min() > out.ix[out.survey == 'EYS-1st year', 'survey_seq'].max()
 
+def test_add_survey_seq_case_3(cohort_input):
+    out = add_survey_seq(cohort_input)
+    assert out.ix[out.survey == 'EYS-1st year', 'survey_seq'].min() > out.ix[out.survey == 'MYS-1st year', 'survey_seq'].max()
+
 def test_survey_seq_complete_seq(cohort_input):
     out = add_survey_seq(cohort_input)
     assert set(out.survey_seq.unique()) == set(range(len(out.survey.unique())))
 
 def test_survey_categories(cohort_input):
     out = add_survey_seq(cohort_input)
-    assert list(out.survey.cat.categories) == ['EIS-1st year', 'F8W-1st year', 'EYS-1st year', 'F8W-2nd year', 'EYS-2nd year']
+    assert list(out.survey.cat.categories) == ['EIS-1st year', 'F8W-1st year', 'MYS-1st year', 'EYS-1st year', 'F8W-2nd year', 'EYS-2nd year']
