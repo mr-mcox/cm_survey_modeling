@@ -1,6 +1,5 @@
 from surveyformat import add_survey_seq as format_survey_seq
 import pandas as pd
-import itertools
 
 
 class ModelData(object):
@@ -8,7 +7,10 @@ class ModelData(object):
     """docstring for ModelData"""
 
     def __init__(self, df=None):
-        self.df = df
+        if type(df) is str:
+            self.df = pd.read_csv(df)
+        else:
+            self.df = df
         self._prop_calcs = dict()
 
     def assign_previous_response(self):
