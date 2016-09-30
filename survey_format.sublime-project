@@ -2,12 +2,6 @@
 	"build_systems":
 	[
 		{
-			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
-			"name": "Anaconda Python Builder",
-			"selector": "source.python",
-			"shell_cmd": "\"/usr/local/bin/python3\" -u \"$file\""
-		},
-		{
 			"cmd":
 			[
 				"py.test",
@@ -15,7 +9,7 @@
 			],
 			"env":
 			{
-				"PYTHONPATH": "$PYTHONPATH:${project_path}"
+				"PYTHONPATH": "$PYTHONPATH:/Users/mcox/Box Sync/experiments/survey_predictions/code"
 			},
 			"name": "Py.Test",
 			"path": "/usr/local/bin/",
