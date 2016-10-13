@@ -11,13 +11,17 @@ class ModelData(object):
             self.df = pd.read_csv(df)
         else:
             self.df = df
+
         self._prop_calcs = dict()
 
     def assign_previous_response(self):
-        if 'survey_seq' not in self.df.columns:
+        if 'next_survey_seq' not in self.df.columns:
             self.add_next_survey_seq()
-        df = self.df.set_index(['person_id', 'survey_seq'])
-        p_df = self.df.set_index(['person_id', 'next_survey_seq'])
+        dedup_df = self.df.drop_duplicates(
+            ['person_id', 'question_code', 'survey_code'], keep='last')
+        df = dedup_df.set_index(['person_id', 'survey_seq', 'question_code'])
+        p_df = dedup_df.set_index(
+            ['person_id', 'next_survey_seq', 'question_code'])
         df['prev_response'] = p_df.response
         df.reset_index(inplace=True)
         self.df = df
@@ -33,7 +37,7 @@ class ModelData(object):
         return self.df
 
     def count_by_prev_response(self, cut_cols=None):
-        if 'survey_seq' not in self.df.columns:
+        if 'prev_response' not in self.df.columns:
             self.assign_previous_response()
 
         df = self.df
