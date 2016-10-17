@@ -79,8 +79,8 @@ def test_assign_previous_response(md_with_dataframe):
 def test_add_survey_seq(md_with_dataframe):
     md = md_with_dataframe
     res = md.add_survey_seq()
-    assert (res.ix[res.survey_code == '1415EYS', 'survey_seq'] >
-            res.ix[res.survey_code == '1415MYS', 'survey_seq']).all()
+    assert (res.ix[res.survey_code == '1415EYS', 'survey_seq'].min() >
+            res.ix[res.survey_code == '1415MYS', 'survey_seq'].max())
 
 
 def test_add_next_survey_seq(md_with_dataframe):
@@ -126,3 +126,21 @@ def test_duplicates_bug(md_with_duplicates_df):
     md = md_with_duplicates_df
     res = md.proportion_for_cut(prev_response=5, unit='survey_code')
     assert res == [0, 0, 0, 0, 0.5, 0.5, 0]
+
+
+def test_run_type(md_with_dataframe_region):
+    md = md_with_dataframe_region
+    resp = md.proportion_for_cut(prev_response=5, unit='survey_code', groups={
+                                 'survey_seq': 1, 'question_code': 'CSI1'})
+
+
+def test_observations_with_filter(md_with_dataframe_region):
+    md = md_with_dataframe_region
+    res = md.observations(row_filter={'survey_code': '1415EYS', 'prev_response': 5})
+    assert (res.survey_code == '1415EYS').all()
+    assert (res.prev_response == 5).all()
+
+def test_observations_with_filter_group(md_with_dataframe_region):
+    md = md_with_dataframe_region
+    res = md.observations(row_filter={'survey_code': '1415EYS', 'prev_response': 5}, group_col='Region')
+    assert (res['Chicago'].Region == 'Chicago').all()

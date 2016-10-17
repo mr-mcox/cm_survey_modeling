@@ -18,7 +18,7 @@ class ModelData(object):
         if 'next_survey_seq' not in self.df.columns:
             self.add_next_survey_seq()
         dedup_df = self.df.drop_duplicates(
-            ['person_id', 'question_code', 'survey_code'], keep='last')
+            ['person_id', 'question_code', 'survey_seq'], keep='last')
         df = dedup_df.set_index(['person_id', 'survey_seq', 'question_code'])
         p_df = dedup_df.set_index(
             ['person_id', 'next_survey_seq', 'question_code'])
@@ -86,3 +86,18 @@ class ModelData(object):
             out_list.append(val)
 
         return out_list
+
+    def observations(self, row_filter=dict(), group_col=None):
+        df = self.assign_previous_response()
+
+        for col, val in row_filter.items():
+            df = df.loc[df[col] == val]
+
+        if group_col is None:
+            return df
+        else:
+            df_grouped = dict()
+            group_levels = df[group_col].unique()
+            for group in group_levels:
+                df_grouped[group] = df.loc[df[group_col] == group]
+            return df_grouped
