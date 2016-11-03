@@ -1,6 +1,7 @@
 import theano
 import theano.tensor as tt
 import numpy as np
+from theano.ifelse import ifelse
 
 epsilon = np.array(1e-32, dtype=theano.config.floatX)
 
@@ -23,12 +24,15 @@ def compute_ps(thresh, location, scale):
 
 
 def max_to_step(idx, vect):
-    return tt.max(vect[:idx + 1])
+    cur = vect[idx]
+    v_max = tt.max(vect[:idx + 1])
+    return ifelse(tt.gt(v_max, cur), v_max - epsilon, cur)
 
 
 def full_thresh(thresh):
-    idxs = tt.arange(thresh.shape[0])
+    t_clip = tt.clip(thresh, 1.5+epsilon, 6.5-epsilon)
+    idxs = tt.arange(t_clip.shape[0])
     thresh_mod, updates = theano.scan(fn=max_to_step,
                                       sequences=[idxs],
-                                      non_sequences=[thresh])
+                                      non_sequences=[t_clip])
     return tt.concatenate([[-1*np.inf, 1.5], thresh_mod, [6.5, np.inf]])

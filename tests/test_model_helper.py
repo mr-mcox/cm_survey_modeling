@@ -37,8 +37,9 @@ def test_compute_ps():
 
 
 def test_full_thresh():
-    thresh = [2, 4.5, 4, 5]
-    mod_thresh = [2, 4.5, 4.5, 5]
+    thresh = [1, 4.5, 4, 7]
+    #Sequence must be monotonic with limits of 1.5 and 6.5
+    mod_thresh = [1.5, 4.5, 4.5, 6.5]
     exp = np.concatenate([[-1*np.inf, 1.5], mod_thresh, [6.5, np.inf]])
 
     t_thresh = tt.vector()
