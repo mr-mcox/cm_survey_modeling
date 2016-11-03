@@ -20,9 +20,8 @@ def test_cdf():
     actual = f_cdf(xs, mu, sigma)
     assert np.allclose(exp, actual)
 
-
 def test_compute_ps():
-    thresh = [i + 2.5 for i in range(4)]
+    thresh = [0.2 for i in range(5)]
     f_thresh = [-1 * np.inf] + [i + 1.5 for i in range(6)] + [np.inf]
     mu = 4
     sigma = 3
@@ -37,9 +36,9 @@ def test_compute_ps():
 
 
 def test_full_thresh():
-    thresh = [1, 4.5, 4, 7]
+    thresh = [0.1, 0.1, 0.2, 0.2, 0.4]
     #Sequence must be monotonic with limits of 1.5 and 6.5
-    mod_thresh = [1.5, 4.5, 4.5, 6.5]
+    mod_thresh = [2, 2.5, 3.5, 4.5]
     exp = np.concatenate([[-1*np.inf, 1.5], mod_thresh, [6.5, np.inf]])
 
     t_thresh = tt.vector()

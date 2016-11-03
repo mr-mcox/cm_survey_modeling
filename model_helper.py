@@ -4,6 +4,7 @@ import numpy as np
 from theano.ifelse import ifelse
 
 epsilon = np.array(1e-32, dtype=theano.config.floatX)
+e_dif = np.array(1e-32, dtype=theano.config.floatX)
 
 
 def cdf(x, location=0, scale=1):
@@ -23,16 +24,13 @@ def compute_ps(thresh, location, scale):
     return cdf(f_thresh[1:], location, scale) - cdf(f_thresh[:-1], location, scale)
 
 
-def max_to_step(idx, vect):
-    cur = vect[idx]
-    v_max = tt.max(vect[:idx + 1])
-    return ifelse(tt.gt(v_max, cur), v_max - epsilon, cur)
+def percent_to_thresh(idx, vect):
+    return 5 * tt.sum(vect[:idx + 1]) + 1.5
 
 
 def full_thresh(thresh):
-    t_clip = tt.clip(thresh, 1.5+epsilon, 6.5-epsilon)
-    idxs = tt.arange(t_clip.shape[0])
-    thresh_mod, updates = theano.scan(fn=max_to_step,
+    idxs = tt.arange(thresh.shape[0]-1)
+    thresh_mod, updates = theano.scan(fn=percent_to_thresh,
                                       sequences=[idxs],
-                                      non_sequences=[t_clip])
+                                      non_sequences=[thresh])
     return tt.concatenate([[-1*np.inf, 1.5], thresh_mod, [6.5, np.inf]])
