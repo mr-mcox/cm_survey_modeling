@@ -36,6 +36,23 @@ class ModelData(object):
         self.df['next_survey_seq'] = self.df.survey_seq + 1
         return self.df
 
+    def add_net(self):
+        df = self.df.copy()
+
+        idx_cols = ['person_id', 'survey_code']
+        orig_cms = df.drop_duplicates(idx_cols)
+        orig_cms.set_index(idx_cols, inplace=True)
+
+        net_codes = [-1 for x in range(4)] + [0, 1, 1]
+        net_map = dict(zip([x+1 for x in range(7)], net_codes))
+        df['net_num'] = df.response.map(net_map)
+        cm_net = df.groupby(idx_cols).mean()
+
+        orig_cms['response'] = cm_net.net_num
+        orig_cms['question_code'] = 'Net'
+
+        self.df = pd.concat([self.df, orig_cms.reset_index()])
+
     def count_by_prev_response(self, cut_cols=None):
         if 'prev_response' not in self.df.columns:
             self.assign_previous_response()

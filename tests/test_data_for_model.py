@@ -49,6 +49,22 @@ def md_with_dataframe_region(md_with_dataframe):
     return md
 
 
+@pytest.fixture
+def md_multiple_qs():
+    cols = 'person_id   question_code   survey_code response Corps'.split()
+    recs = [(3554131, 'CSI1', '1415MYS', 1, '1st year'),
+            (3490339, 'CSI1', '1415MYS', 5, '1st year'),
+            (3557769, 'CSI1', '1415MYS', 7, '1st year'),
+            (3013575, 'CSI1', '1415MYS', 5, '1st year'),
+            (3554131, 'CSI1', '1415MYS', 6, '1st year'),
+            (3490339, 'CSI1', '1415MYS', 6, '1st year'),
+            (3557769, 'CSI1', '1415MYS', 6, '1st year'),
+            (3013575, 'CSI1', '1415MYS', 5, '1st year'), ]
+    md = ModelData()
+    md.df = pd.DataFrame.from_records(recs, columns=cols)
+    return md
+
+
 def test_process_functional(md_with_dataframe):
     # Given enerate proportions for a cut
     md = md_with_dataframe
@@ -136,11 +152,30 @@ def test_run_type(md_with_dataframe_region):
 
 def test_observations_with_filter(md_with_dataframe_region):
     md = md_with_dataframe_region
-    res = md.observations(row_filter={'survey_code': '1415EYS', 'prev_response': 5})
+    res = md.observations(
+        row_filter={'survey_code': '1415EYS', 'prev_response': 5})
     assert (res.survey_code == '1415EYS').all()
     assert (res.prev_response == 5).all()
 
+
 def test_observations_with_filter_group(md_with_dataframe_region):
     md = md_with_dataframe_region
-    res = md.observations(row_filter={'survey_code': '1415EYS', 'prev_response': 5}, group_col='Region')
+    res = md.observations(
+        row_filter={'survey_code': '1415EYS', 'prev_response': 5}, group_col='Region')
     assert (res['Chicago'].Region == 'Chicago').all()
+
+# def test_observations_with_filter_group_two_level(md_with_dataframe_region):
+#     md = md_with_dataframe_region
+#     res = md.observations(row_filter={'survey_code': '1415EYS'}, group_col=['Region','prev_response'])
+#     assert (res['Chicago'][5].Region == 'Chicago').all()
+#     assert (res['Chicago'][5].prev_response == 5).all()
+
+
+def test_compute_net(md_multiple_qs):
+    md = md_multiple_qs
+    md.add_net()
+    res = md.df.ix[md.df.question_code == 'Net']
+    pids = [3554131, 3490339, 3557769, 3013575]
+    exp_net = [0, 0.5, 1, 0]
+    assert (res.set_index('person_id').loc[pids, 'response'] == exp_net).all()
+    assert (res.Corps == '1st year').all()

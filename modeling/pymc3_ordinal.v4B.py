@@ -19,8 +19,7 @@ with pd.HDFStore('../inputs/responses.h5') as store:
         df = pd.read_csv('../inputs/cm_response_confidential.csv')
 
 md = ModelData(df.loc[~df.survey_code.str.contains('1516')])
-qs = ['CSI1', 'CSI10', 'CSI12', 'CSI2', 'CSI3', 'CSI4', 'CSI5', 'CSI6',
-      'CSI7', 'CSI8', 'Culture1']
+qs = ['Culture1']
 num_levels = 7
 
 
