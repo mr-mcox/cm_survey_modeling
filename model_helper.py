@@ -1,11 +1,8 @@
 import theano
 import theano.tensor as tt
 import numpy as np
-from theano.ifelse import ifelse
 
 epsilon = np.array(1e-32, dtype=theano.config.floatX)
-e_dif = np.array(1e-32, dtype=theano.config.floatX)
-
 
 def cdf(x, location=0, scale=1):
     # Adapted from Breeze
