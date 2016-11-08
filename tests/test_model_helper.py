@@ -1,4 +1,4 @@
-from model_helper import cdf, compute_ps, full_thresh
+from helpers.model_helper import cdf, compute_ps, full_thresh
 import numpy as np
 from scipy.stats import norm
 import theano

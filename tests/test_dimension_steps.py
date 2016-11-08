@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from surveyformat import remove_blank_corps, add_cohort, add_survey, add_survey_seq
+from helpers.surveyformat import remove_blank_corps, add_cohort, add_survey, add_survey_seq
 
 
 def test_remove_rows_without_corps():

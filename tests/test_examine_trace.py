@@ -1,4 +1,4 @@
-from examine_trace import compute_ps, compute_net
+from helpers.examine_trace import compute_ps, compute_net
 import numpy as np
 from scipy.stats import norm
 import pandas as pd

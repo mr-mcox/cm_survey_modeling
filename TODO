@@ -1,6 +1,2 @@
- ✔ Can we turn aspects of the model into theano functions to make the model run faster? @done (16-10-18 19:32)
- ✔ Bonus if we can also test them @done (16-10-18 19:32)
- ☐ Thresholds are shared across response levels
- ☐ Mu and sigma are different across response levels, but computed simultaneosly
- ☐ "Cohort mu" (replacing master_mu) for each survey
- ☐ Get region in full data pull
+ ✔ Move files to new locations @done (16-11-08 11:54)
+ ☐ Remove aspects of surveyformat and model_data that are not being used

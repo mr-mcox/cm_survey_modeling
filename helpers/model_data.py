@@ -1,5 +1,40 @@
-from surveyformat import add_survey_seq as format_survey_seq
 import pandas as pd
+
+
+def add_survey(df):
+    out = df.copy()
+    out['survey_mod'] = out.survey_code.str.replace('R0', 'F8W')
+    out['survey_mod'] = out.survey_mod.str.extract('(\w{3})$', expand=False)
+    out['survey'] = out.survey_mod + '-' + out.Corps
+    return out
+
+
+def format_survey_seq(df):
+    out = df.copy()
+    if 'survey' not in out.columns:
+        out = add_survey(out)
+
+    survey_order = 'EIS F8W MYS EYS'.split()
+
+    fy_survey_sel = out.ix[out.Corps == '1st year', 'survey_mod'].unique()
+    fy_survey_mod = [s for s in survey_order if s in fy_survey_sel]
+    fy_nums = [x for x in range(len(fy_survey_mod))]
+    seq = dict(zip(fy_survey_mod, fy_nums))
+    out['survey_seq'] = out.survey_mod.map(seq)
+
+    sy_survey_sel = out.ix[out.Corps == '2nd year', 'survey_mod'].unique()
+    sy_survey_mod = [s for s in survey_order if s in sy_survey_sel]
+    sy_nums = [x + len(fy_survey_mod) for x in range(len(sy_survey_mod))]
+    seq = dict(zip(sy_survey_mod, sy_nums))
+    sy = out.Corps == '2nd year'
+    out.ix[sy, 'survey_seq'] = out.ix[sy, 'survey_mod'].map(seq)
+
+    survey_sort = out.sort_values('survey_seq')['survey'].unique()
+
+    out.survey = out.survey.astype(
+        'category', categories=survey_sort, ordered=True)
+
+    return out
 
 
 class ModelData(object):
@@ -52,69 +87,3 @@ class ModelData(object):
         orig_cms['question_code'] = 'Net'
 
         self.df = pd.concat([self.df, orig_cms.reset_index()])
-
-    def count_by_prev_response(self, cut_cols=None):
-        if 'prev_response' not in self.df.columns:
-            self.assign_previous_response()
-
-        df = self.df
-
-        cols = list()
-        if cut_cols is None:
-            cols = [c for c in df.columns if c != 'person_id']
-        else:
-            cols = cut_cols + ['response', 'prev_response']
-
-        size_s = df.groupby(cols).size()
-
-        out = pd.DataFrame({'num': size_s}, index=size_s.index).reset_index()
-        return out
-
-    def calculate_proportions(self, input_df):
-        df = input_df.copy()
-        cols_for_groups = [
-            c for c in df.columns if c not in ['num', 'response']]
-        sum_s = df.groupby(cols_for_groups).sum()['num']
-        df.set_index(cols_for_groups,  inplace=True)
-        df['total_num'] = sum_s
-        df['percent'] = df.num / df.total_num
-        return df.reset_index()
-
-    def proportion_for_cut(self, prev_response, unit, groups=dict()):
-        cut_cols = [k for k in groups.keys()] + [unit]
-        cut_cols_tup = tuple(cut_cols)
-        if cut_cols_tup not in self._prop_calcs:
-            counts = self.count_by_prev_response(cut_cols=cut_cols)
-            calc_props = self.calculate_proportions(counts)
-            self._prop_calcs[cut_cols_tup] = calc_props
-        df = self._prop_calcs[cut_cols_tup]
-
-        full_mask = [True] * len(df)
-        for key, value in groups.items():
-            full_mask = full_mask & (df[key] == value)
-        df = df.ix[full_mask]
-        df.set_index('response', inplace=True)
-        df_pr = df.ix[df.prev_response == prev_response, 'percent']
-        out_list = list()
-        for i in range(1, 8):
-            val = 0
-            if i in df_pr.index:
-                val = df_pr.get(i)
-            out_list.append(val)
-
-        return out_list
-
-    def observations(self, row_filter=dict(), group_col=None):
-        df = self.assign_previous_response()
-
-        for col, val in row_filter.items():
-            df = df.loc[df[col] == val]
-
-        if group_col is None:
-            return df
-        else:
-            df_grouped = dict()
-            group_levels = df[group_col].unique()
-            for group in group_levels:
-                df_grouped[group] = df.loc[df[group_col] == group]
-            return df_grouped

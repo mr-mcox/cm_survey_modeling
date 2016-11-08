@@ -9,20 +9,17 @@ def add_dimensions(df):
     return out
 
 
-def melt(df):
-    df2 = df.rename(columns={'Region':'region'})
-    id_vars = ['region','cohort','survey','survey_seq']
-    cols = list(df2.columns)
-    survey_code_idx = cols.index('survey_code') + 1
-    pre_survey_code_cols = cols[:survey_code_idx]
-    for col in set(pre_survey_code_cols) - set(id_vars):
-        del df2[col]
+# def melt(df):
+#     df2 = df.rename(columns={'Region': 'region'})
+#     id_vars = ['region', 'cohort', 'survey', 'survey_seq']
+#     cols = list(df2.columns)
+#     survey_code_idx = cols.index('survey_code') + 1
+#     pre_survey_code_cols = cols[:survey_code_idx]
+#     for col in set(pre_survey_code_cols) - set(id_vars):
+#         del df2[col]
 
-    #preserve categories
-    cats = df2.survey.cat.categories
-    out = pd.melt(df2, id_vars=id_vars)
-    #out.survey = out.survey.astype('category', categories = cats, ordered=True)
-    return out
+#     out = pd.melt(df2, id_vars=id_vars)
+#     return out
 
 
 def remove_blank_corps(df):
@@ -71,6 +68,7 @@ def add_survey_seq(df):
 
     survey_sort = out.sort_values('survey_seq')['survey'].unique()
 
-    out.survey = out.survey.astype('category', categories = survey_sort, ordered=True)
+    out.survey = out.survey.astype(
+        'category', categories=survey_sort, ordered=True)
 
     return out
