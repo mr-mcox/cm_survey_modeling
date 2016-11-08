@@ -28,7 +28,7 @@ def run_model(data):
 
     with pm.Model() as model:
         mu = pm.Normal('mu', mu=4, sd=3)
-        sigma = pm.HalfCauchy('sigma', beta=1)
+        sigma = pm.Uniform('sigma', lower=0.7, upper=70)
         thresh = pm.Dirichlet('thresh', a=np.ones(5))
 
         cat_p = compute_ps(thresh, mu, sigma)
