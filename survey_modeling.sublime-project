@@ -16,6 +16,23 @@
 			"working_dir": "${project_path}"
 		},
 		{
+			"cmd":
+			[
+				"py.test",
+				"tests/",
+				"-v",
+				"-m",
+				"current"
+			],
+			"env":
+			{
+				"PYTHONPATH": "$PYTHONPATH:/Users/mcox/Box Sync/experiments/survey_predictions/code"
+			},
+			"name": "Run Current",
+			"path": "/usr/local/bin/",
+			"working_dir": "${project_path}"
+		},
+		{
 			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 			"name": "Anaconda Python Builder",
 			"selector": "source.python",
