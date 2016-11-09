@@ -10,6 +10,7 @@ from helpers.examine_trace import compute_net
 pytestmark = pytest.mark.model
 
 
+
 @pytest.fixture
 def surveys_data():
     with pd.HDFStore(path.join('..', 'inputs', 'responses.h5'))as store:
@@ -35,14 +36,10 @@ def test_national_model(surveys_data):
 
 @pytest.mark.current
 def test_regional_model(surveys_data):
-    # Regional model is ok, but performs poorly for small regions.
-    # 20% regions more than 5% difference
-    # Mean diff by region is 9%
-    # Median diff is 2.8%
+    # 15% regions more than 5% difference
+    # Mean diff by region is 3%
+    # Median diff is 2%
     data = surveys_data
-    # few_reg = ['New York', 'Bay Area']
-    # few_reg = data.Region.unique()[:10]
-    # data = data.ix[data.Region.isin(few_reg)]
     data['net'] = 0
     data.ix[data.response >= 6, 'net'] = 1
     data.ix[data.response < 5, 'net'] = -1
@@ -53,9 +50,13 @@ def test_regional_model(surveys_data):
     exp_by_reg = exp.loc[result['heads']['regs']].net
     nets = compute_net(pm.trace_to_dataframe(result['trace']))
 
-    num_reg = len(result['heads']['regs'])
-    med_by_run = [np.median(nets[str(k)]) for k in range(num_reg)]
 
-    diff = np.absolute(exp_by_reg - med_by_run)
+    net_r = {result['heads']['regs'][i]: nets[str(i)] for i in range(len(result['heads']['regs']))}
 
-    assert np.sum(diff > 0.05)/len(diff) < 0.1
+    recs = list()
+    for reg, vals in net_r.items():
+        recs.append((reg, (vals < exp.loc[reg, 'net']).sum()/len(vals)))
+
+    ptile = pd.DataFrame.from_records(recs, columns=['region', 'ptile'])
+
+    assert np.sum((ptile.ptile < 0.95) & (ptile.ptile > 0.05))/len(ptile) > 0.9

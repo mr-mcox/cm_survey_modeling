@@ -57,12 +57,16 @@ def run_regional_model(data, progressbar=False):
     heads = {'regs': regs}
 
     with pm.Model() as model:
-        mu = pm.Normal('mu', mu=4, sd=3, shape=num_reg)
-        sigma = pm.Uniform('sigma', lower=0.7, upper=70, shape=num_reg)
+        b0_mu = pm.Normal('b0_mu', mu=4, sd=3)
+        sigma = pm.Uniform('sigma', lower=0.7, upper=70)
         thresh = pm.Dirichlet('thresh', a=np.ones(5))
 
+        mu_reg = pm.Normal('mu_reg', mu=0, sd=3, shape=num_reg)
+
+        reg_mu = b0_mu + mu_reg
+
         reg_range = tt.arange(num_reg)
-        cat_ps, update = theano.scan(fn=lambda r_i: compute_ps(thresh, mu[r_i], sigma[r_i]),
+        cat_ps, update = theano.scan(fn=lambda r_i: compute_ps(thresh, reg_mu[r_i], sigma),
                                      sequences=[reg_range])
 
         cat_r = theano.dot(r_mtx, cat_ps)

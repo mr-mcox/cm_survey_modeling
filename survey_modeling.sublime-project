@@ -5,14 +5,15 @@
 			"cmd":
 			[
 				"py.test",
-				"tests/"
+				"tests/",
+				"-m",
+				"not model"
 			],
 			"env":
 			{
 				"PYTHONPATH": "$PYTHONPATH:/Users/mcox/Box Sync/experiments/survey_predictions/code"
 			},
 			"name": "Py.Test",
-			"path": "/usr/local/bin/",
 			"working_dir": "${project_path}"
 		},
 		{
@@ -20,7 +21,6 @@
 			[
 				"py.test",
 				"tests/",
-				"-v",
 				"-m",
 				"current"
 			],

@@ -2,9 +2,11 @@ import theano
 import theano.tensor as tt
 import numpy as np
 
-epsilon = np.array(1e-32, dtype=theano.config.floatX)
+
 
 def cdf(x, location=0, scale=1):
+    epsilon = np.array(1e-32, dtype=theano.config.floatX)
+    
     # Adapted from Breeze
     location = tt.cast(location, theano.config.floatX)
     scale = tt.cast(scale, theano.config.floatX)

@@ -21,15 +21,20 @@ def compute_ps(df):
     if 'mu' in df.columns:
         return ps_from_thresh(thresh, df.mu, df.sigma)
     else:
-        mu_df = df.ix[:, df.columns.str.contains('mu__')]
-        mus = df.ix[:, df.columns.str.contains('mu__')]
-        sigmas = df.ix[:, df.columns.str.contains('sigma__')]
-        lables = [re.search('mu__([\d_]+)', c).group(1) for c in mu_df.columns]
+        mu_regs_cols = df.ix[:, df.columns.str.contains('mu_reg__')]
+        labels = [re.search('mu_reg__([\d_]+)', c).group(1) for c in mu_regs_cols.columns]
+
+        mu_regs = df.ix[:, df.columns.str.contains('mu_reg__')].as_matrix()
+
+        num_runs = mu_regs.shape[0]
+        reg_mu = mu_regs + df.b0_mu.as_matrix().reshape(num_runs, -1)
 
         out = dict()
-        for i, label in enumerate(lables):
-            out[label] = ps_from_thresh(
-                thresh, mus.iloc[:, i], sigmas.iloc[:, i])
+        for i, label in enumerate(labels):
+            ps = ps_from_thresh(
+                thresh, reg_mu[:, i], df.sigma)
+            assert (ps >= 0).all()
+            out[label] = ps
         return out
 
 

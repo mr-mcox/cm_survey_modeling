@@ -5,8 +5,9 @@ import theano
 import theano.tensor as tt
 import pytest
 
-
 def test_cdf():
+    theano.config.compute_test_value = 'ignore'
+
     xs = np.arange(5)
     mu = 4
     sigma = 3
