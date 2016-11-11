@@ -24,7 +24,7 @@ def compute_ps(thresh, location, scale):
 
 
 def percent_to_thresh(idx, vect):
-    return 5 * tt.sum(vect[:idx + 1]) + 1.5
+    return 5 * tt.sum(vect[:idx + 1]) + 0.5
 
 
 def full_thresh(thresh):
@@ -32,4 +32,4 @@ def full_thresh(thresh):
     thresh_mod, updates = theano.scan(fn=percent_to_thresh,
                                       sequences=[idxs],
                                       non_sequences=[thresh])
-    return tt.concatenate([[-1*np.inf, 1.5], thresh_mod, [6.5, np.inf]])
+    return tt.concatenate([[-1*np.inf, 0.5], thresh_mod, [5.5, np.inf]])
