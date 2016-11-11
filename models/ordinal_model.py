@@ -46,7 +46,7 @@ def run_national_model(data):
     return trace
 
 
-def run_regional_model(data, progressbar=False):
+def run_regional_model(data, progressbar=False, db_file=None):
 
     # Setup masks
     r_dum = data.Region.str.get_dummies()
@@ -68,15 +68,19 @@ def run_regional_model(data, progressbar=False):
         reg_range = tt.arange(num_reg)
         cat_ps, update = theano.scan(fn=lambda r_i: compute_ps(thresh, reg_mu[r_i], sigma),
                                      sequences=[reg_range])
+        ps = pm.Deterministic('ps', cat_ps)
 
         cat_r = theano.dot(r_mtx, cat_ps)
         resp = data.response - 1
         results = pm.Categorical('results', p=cat_r, observed=resp)
 
     with model:
+        db = None
+        if db_file is not None:
+            db = pm.backends.Text(db_file)
         step = pm.Metropolis()
         burn = pm.sample(2000, step=step, progressbar=progressbar)
-        trace = pm.sample(5000, step=step, start=burn[-1], progressbar=progressbar)
+        trace = pm.sample(5000, step=step, start=burn[-1], progressbar=progressbar, trace=db)
 
     return {'heads': heads, 'trace': trace}
 
