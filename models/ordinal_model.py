@@ -46,7 +46,8 @@ def run_national_model(data):
     return trace
 
 
-def run_regional_model(data, progressbar=False, db_file=None):
+def run_regional_model(data,
+                       progressbar=False, db_file=None, burn=2000, samp=5000):
 
     # Setup masks
     r_dum = data.Region.str.get_dummies()
@@ -54,7 +55,7 @@ def run_regional_model(data, progressbar=False, db_file=None):
     r_mtx = r_dum.as_matrix()
     num_reg = r_mtx.shape[1]
 
-    heads = {'regs': regs}
+    heads = [{'name': 'Region', 'values': regs}]
 
     with pm.Model() as model:
         b0_mu = pm.Normal('b0_mu', mu=4, sd=3)
@@ -79,8 +80,9 @@ def run_regional_model(data, progressbar=False, db_file=None):
         if db_file is not None:
             db = pm.backends.Text(db_file)
         step = pm.Metropolis()
-        burn = pm.sample(2000, step=step, progressbar=progressbar)
-        trace = pm.sample(5000, step=step, start=burn[-1], progressbar=progressbar, trace=db)
+        burn = pm.sample(burn, step=step, progressbar=progressbar)
+        trace = pm.sample(
+            samp, step=step, start=burn[-1], progressbar=progressbar, trace=db)
 
     return {'heads': heads, 'trace': trace}
 

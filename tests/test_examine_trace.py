@@ -8,15 +8,15 @@ import pytest
 @pytest.fixture
 def national_trace():
     thresh = [0.2 for i in range(5)]
-    mu = 4
-    sigma = 3
+    mu = 3
+    sigma = 5
 
     rec_row = (mu, sigma, *thresh)
     cols = 'mu sigma thresh__0  thresh__1  thresh__2  thresh__3  thresh__4'.split()
 
     trace_df = pd.DataFrame.from_records([rec_row], columns=cols)
 
-    f_thresh = [-1 * np.inf] + [i + 1.5 for i in range(6)] + [np.inf]
+    f_thresh = [-1 * np.inf] + [i + 0.5 for i in range(6)] + [np.inf]
     exp = norm.cdf(f_thresh[1:], mu, sigma) - \
         norm.cdf(f_thresh[:-1], mu, sigma)
 
@@ -26,8 +26,8 @@ def national_trace():
 @pytest.fixture
 def regional_trace():
     thresh = [0.2 for i in range(5)]
-    b0_mu = 4
-    sigma = 3
+    b0_mu = 3
+    sigma = 5
 
     reg_mu_delta_0 = 0
     reg_mu_delta_1 = 1
@@ -38,7 +38,7 @@ def regional_trace():
 
     trace_df = pd.DataFrame.from_records([rec_row, rec_row, rec_row], columns=cols)
 
-    f_thresh = [-1 * np.inf] + [i + 1.5 for i in range(6)] + [np.inf]
+    f_thresh = [-1 * np.inf] + [i + 0.5 for i in range(6)] + [np.inf]
     reg_0_mu = b0_mu + reg_mu_delta_0
     reg_1_mu = b0_mu + reg_mu_delta_1
 

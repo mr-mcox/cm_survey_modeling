@@ -12,8 +12,8 @@ def ps_from_thresh(thresh, mu, sigma):
 def compute_ps(df):
     ths = df.ix[:, df.columns.str.contains('thresh__')].as_matrix()
     ths_sum = np.add.accumulate(ths, axis=1)
-    inner_thresh = ths_sum * 5 + 1.5
-    thresh = np.insert(inner_thresh, 0, 1.5, axis=1)
+    inner_thresh = ths_sum * 5 + 0.5
+    thresh = np.insert(inner_thresh, 0, 0.5, axis=1)
     thresh = np.insert(thresh, 0, -1*np.inf, axis=1)
     thresh = np.append(
         thresh, np.inf * np.ones(thresh.shape[0]).reshape(-1, 1), axis=1)

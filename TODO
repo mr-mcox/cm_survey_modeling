@@ -1,5 +1,6 @@
  ✔ Move files to new locations @done (16-11-08 11:54)
  ✔ Remove aspects of surveyformat and model_data that are not being used @done (16-11-08 13:40)
  ✔ Adjust cut points of thresholds so that mu reflects input data @done (16-11-11 14:37)
- ☐ Rework headers to more easily reconstruct values
+ ✔ Rework headers to more easily reconstruct values @done (16-11-11 15:10)
  ☐ Create frame of results from trace and json
+ ☐ Create nets within frame (and remove old compute nets)

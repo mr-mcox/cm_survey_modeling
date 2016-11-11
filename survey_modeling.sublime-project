@@ -29,7 +29,6 @@
 				"PYTHONPATH": "$PYTHONPATH:/Users/mcox/Box Sync/experiments/survey_predictions/code"
 			},
 			"name": "Run Current",
-			"path": "/usr/local/bin/",
 			"working_dir": "${project_path}"
 		},
 		{
