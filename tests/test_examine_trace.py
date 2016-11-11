@@ -1,4 +1,4 @@
-from helpers.examine_trace import compute_ps, compute_net
+from helpers.examine_trace import label_trace
 import numpy as np
 from scipy.stats import norm
 import pandas as pd
@@ -31,56 +31,36 @@ def regional_trace():
 
     reg_mu_delta_0 = 0
     reg_mu_delta_1 = 1
-    rec_row = (b0_mu, sigma, reg_mu_delta_0, reg_mu_delta_1, *thresh)
+    ps = [0.15 for x in range(7)]
+    rec_row = (b0_mu, sigma, reg_mu_delta_0, reg_mu_delta_1, *thresh, *ps, *ps)
     cols = """b0_mu sigma
     mu_reg__0 mu_reg__1
-    thresh__0  thresh__1  thresh__2  thresh__3  thresh__4""".split()
+    thresh__0  thresh__1  thresh__2  thresh__3  thresh__4
+    ps__0_0 ps__0_1 ps__0_2 ps__0_3 ps__0_4 ps__0_5 ps__0_6
+    ps__1_0 ps__1_1 ps__1_2 ps__1_3 ps__1_4 ps__1_5 ps__1_6
+    """.split()
 
-    trace_df = pd.DataFrame.from_records([rec_row, rec_row, rec_row], columns=cols)
+    trace_df = pd.DataFrame.from_records(
+        [rec_row, rec_row, rec_row], columns=cols)
 
-    f_thresh = [-1 * np.inf] + [i + 0.5 for i in range(6)] + [np.inf]
-    reg_0_mu = b0_mu + reg_mu_delta_0
-    reg_1_mu = b0_mu + reg_mu_delta_1
+    heads = [{'name': 'Region', 'values': ['Alabama', 'Atlanta']}]
 
-    exp_0 = norm.cdf(f_thresh[1:], reg_0_mu, sigma) - \
-        norm.cdf(f_thresh[:-1], reg_0_mu, sigma)
-    exp_1 = norm.cdf(f_thresh[1:], reg_1_mu, sigma) - \
-        norm.cdf(f_thresh[:-1], reg_1_mu, sigma)
-
-    return {'trace_df': trace_df, 'ps': {'0': exp_0, '1': exp_1}}
+    return {'heads': heads, 'trace': trace_df}
 
 
-def test_trace_to_compute_ps(national_trace):
-    trace_df = national_trace['trace_df']
-    exp = national_trace['ps']
-
-    res = compute_ps(trace_df)
-    assert np.allclose(res[0], exp)
+def test_overall_metrtics_df(regional_trace):
+    res = label_trace(regional_trace['trace'], regional_trace['heads'])
+    assert {'b0_mu', 'sigma', 'i', 'thresh__3'} <= set(res['overall'].columns)
 
 
-def test_trace_to_compute_net(national_trace):
-    trace_df = national_trace['trace_df']
-    ps = national_trace['ps']
+def test_reg_metrtics_df(regional_trace):
+    res = label_trace(regional_trace['trace'], regional_trace['heads'])
+    reg_df = res[1]
+    assert (reg_df.loc[reg_df.Region == 'Alabama', 'mu_reg'] == 0).all()
+    assert (reg_df.loc[reg_df.Region == 'Atlanta', 'mu_reg'] == 1).all()
+    assert (reg_df.loc[reg_df.Region == 'Atlanta', 'ps0'] == 0.15).all()
 
-    net = sum(ps[5:]) - sum(ps[:4])
-
-    assert compute_net(trace_df)[0] == net
-
-
-def test_trace_to_compute_ps_reg(regional_trace):
-    trace_df = regional_trace['trace_df']
-    exp = regional_trace['ps']
-
-    res = compute_ps(trace_df)
-    for k in exp.keys():
-        assert np.allclose(res[k][0], exp[k])
-
-
-def test_trace_to_compute_net_reg(regional_trace):
-    trace_df = regional_trace['trace_df']
-    exp = regional_trace['ps']
-
-    res = compute_net(trace_df)
-    for k in exp.keys():
-        net = sum(exp[k][5:]) - sum(exp[k][:4])
-        assert np.allclose(res[k][0], net)
+def test_reg_nets_df(regional_trace):
+    res = label_trace(regional_trace['trace'], regional_trace['heads'])
+    reg_df = res[1]
+    assert (reg_df.loc[reg_df.Region == 'Alabama', 'net'] == -0.3).all()

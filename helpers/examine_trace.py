@@ -1,56 +1,36 @@
-import numpy as np
-from scipy.stats import norm
-import re
+import pandas as pd
 
 
-def ps_from_thresh(thresh, mu, sigma):
-    lows = norm.cdf(thresh[:, :-1].T, mu, sigma).T
-    highs = norm.cdf(thresh[:, 1:].T, mu, sigma).T
-    return highs - lows
+def label_trace(trace, heads):
+    thresh_cols = trace.columns.str.contains('thresh__\d')
+    numbered_cols = trace.columns.str.contains('__\d')
+    numbered_cols = numbered_cols & (~thresh_cols)
 
+    overall_df = trace.loc[:, ~numbered_cols]
+    overall_df['i'] = range(len(overall_df))
 
-def compute_ps(df):
-    ths = df.ix[:, df.columns.str.contains('thresh__')].as_matrix()
-    ths_sum = np.add.accumulate(ths, axis=1)
-    inner_thresh = ths_sum * 5 + 0.5
-    thresh = np.insert(inner_thresh, 0, 0.5, axis=1)
-    thresh = np.insert(thresh, 0, -1*np.inf, axis=1)
-    thresh = np.append(
-        thresh, np.inf * np.ones(thresh.shape[0]).reshape(-1, 1), axis=1)
+    numbered_df = trace.loc[:, numbered_cols]
+    numbered_df['i'] = range(len(numbered_df))
+    mlt = pd.melt(numbered_df, id_vars='i')
+    mlt['idx_num'] = pd.to_numeric(mlt.variable.str.extract('__(\d+)'))
+    mlt[heads[0]['name']] = mlt.idx_num.map(lambda x: heads[0]['values'][x])
+    mlt['var_name'] = mlt.variable.str.extract('([\w_]+)__')
 
-    if 'mu' in df.columns:
-        return ps_from_thresh(thresh, df.mu, df.sigma)
-    else:
-        mu_regs_cols = df.ix[:, df.columns.str.contains('mu_reg__')]
-        labels = [re.search('mu_reg__([\d_]+)', c).group(1) for c in mu_regs_cols.columns]
+    # Rework ps
+    mlt_ps = mlt.ix[mlt.var_name == 'ps']
+    mlt_ps['var_name'] = mlt_ps['var_name'] + \
+        mlt_ps.variable.str.extract('_(\d)$')
+    mlt.ix[mlt_ps.index, 'var_name'] = mlt_ps['var_name']
 
-        mu_regs = df.ix[:, df.columns.str.contains('mu_reg__')].as_matrix()
+    idx_cols = ['i', heads[0]['name'], 'var_name']
+    stacked = mlt.set_index(idx_cols)['value']
+    one_df = stacked.unstack(level=-1)
 
-        num_runs = mu_regs.shape[0]
-        reg_mu = mu_regs + df.b0_mu.as_matrix().reshape(num_runs, -1)
+    # Add net
+    ps_cols = one_df.columns.str.contains('ps\d')
+    all_ps = all_ps = one_df.loc[:, ps_cols].as_matrix()
+    one_df['net'] = all_ps[:, 5:].sum(axis=1) - all_ps[:, :4].sum(axis=1)
 
-        out = dict()
-        for i, label in enumerate(labels):
-            ps = ps_from_thresh(
-                thresh, reg_mu[:, i], df.sigma)
-            assert (ps >= 0).all()
-            out[label] = ps
-        return out
+    one_df.reset_index(inplace=True)
 
-
-def net_from_ps(ps):
-    weak = ps[:, :4].sum(axis=1)
-    strong = ps[:, 5:].sum(axis=1)
-    return strong - weak
-
-
-def compute_net(df):
-    ps = compute_ps(df)
-
-    if type(ps)is dict:
-        out = dict()
-        for k in ps.keys():
-            out[k] = net_from_ps(ps[k])
-        return out
-    else:
-        return net_from_ps(ps)
+    return {'overall': overall_df, 1: one_df}

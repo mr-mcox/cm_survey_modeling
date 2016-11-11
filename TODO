@@ -2,5 +2,8 @@
  ✔ Remove aspects of surveyformat and model_data that are not being used @done (16-11-08 13:40)
  ✔ Adjust cut points of thresholds so that mu reflects input data @done (16-11-11 14:37)
  ✔ Rework headers to more easily reconstruct values @done (16-11-11 15:10)
- ☐ Create frame of results from trace and json
- ☐ Create nets within frame (and remove old compute nets)
+ ✔ Create frame of results from trace and json @done (16-11-11 17:13)
+ ✔ Create nets within frame (and remove old compute nets) @done (16-11-11 17:13)
+ ☐ Rework national model with nets
+ ☐ Rework regional model with nets
+ ☐ Refactor label trace - its seems more complex than necessary
