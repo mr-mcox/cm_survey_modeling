@@ -55,7 +55,7 @@ def run_regional_model(data,
     r_mtx = r_dum.as_matrix()
     num_reg = r_mtx.shape[1]
 
-    heads = [{'name': 'Region', 'values': regs}]
+    heads = [{'name': 'Region', 'values': regs.tolist()}]
 
     with pm.Model() as model:
         b0_mu = pm.Normal('b0_mu', mu=4, sd=3)
