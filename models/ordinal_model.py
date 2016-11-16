@@ -69,7 +69,8 @@ def run_regional_model(data,
         reg_range = tt.arange(num_reg)
         cat_ps, update = theano.scan(fn=lambda r_i: compute_ps(thresh, reg_mu[r_i], sigma),
                                      sequences=[reg_range])
-        ps = pm.Deterministic('ps', cat_ps)
+        reg_ps = pm.Deterministic('reg_ps', cat_ps)
+        nat_ps = pm.Deterministic('nat_ps', compute_ps(thresh, b0_mu, sigma))
 
         cat_r = theano.dot(r_mtx, cat_ps)
         resp = data.response - 1
