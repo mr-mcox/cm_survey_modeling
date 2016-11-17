@@ -6,35 +6,46 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
-with pd.HDFStore(path.join('..', 'inputs', 'responses.h5')) as store:
-    resp = pd.DataFrame()
-    assert 'responses' in store
-    resp = store['responses']
-
-qcs = resp.loc[(resp.survey_code == '1617F8W'), 'question_code'].unique()
-overalls = list()
-regionals = list()
-
-for qc in qcs:
-    print('Processing {}'.format(qc))
-    db_name = 'region_ordinal_qc_{}'.format(qc)
-    db_file = path.join('..', 'traces', db_name)
-    trace = pd.read_csv(path.join(db_file, 'chain-0.csv'))
+with pd.HDFStore(path.join('..', 'inputs', 'processed', 'reg_influence.h5')) as store:
+    oall = pd.DataFrame()
+    regs = pd.DataFrame()
     
-    with open('{}.json'.format(db_file)) as json_file:
-        heads = json.load(json_file)
+    if 'overall' in store:
+        oall = store['overall']
+        regs = store['region']
+    else:
+        with pd.HDFStore(path.join('..', 'inputs', 'responses.h5')) as resp_store:
+            resp = pd.DataFrame()
+            assert 'responses' in resp_store
+            resp = resp_store['responses']
         
-    lt = label_trace(trace, heads)
-    lt_oall = lt['overall']
-    lt_oall['question_code'] = qc
-    overalls.append(lt_oall)
-    
-    lt_reg = lt[1]
-    lt_reg['question_code'] = qc
-    regionals.append(lt_reg)
-    
-oall = pd.concat(overalls)
-regs = pd.concat(regionals)
+        qcs = resp.loc[(resp.survey_code == '1617F8W'), 'question_code'].unique()
+        overalls = list()
+        regionals = list()
+        
+        for qc in qcs:
+            print('Processing {}'.format(qc))
+            db_name = 'region_ordinal_qc_{}'.format(qc)
+            db_file = path.join('..', 'traces', db_name)
+            trace = pd.read_csv(path.join(db_file, 'chain-0.csv'))
+            
+            with open('{}.json'.format(db_file)) as json_file:
+                heads = json.load(json_file)
+                
+            lt = label_trace(trace, heads)
+            lt_oall = lt['overall']
+            lt_oall['question_code'] = qc
+            overalls.append(lt_oall)
+            
+            lt_reg = lt[1]
+            lt_reg['question_code'] = qc
+            regionals.append(lt_reg)
+            
+        oall = pd.concat(overalls)
+        regs = pd.concat(regionals)
+        
+        store['overall'] = oall
+        store['region'] = regs
     
 reg_csi = regs.groupby(['Region','i'])['net'].mean().reset_index()
 
